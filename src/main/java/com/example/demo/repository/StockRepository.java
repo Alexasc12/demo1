@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import com.example.demo.dto.SockDTO;
 import com.example.demo.model.Color;
 import com.example.demo.model.SizeSock;
 import com.example.demo.model.Sock;
@@ -10,10 +11,12 @@ import java.util.List;
 public interface StockRepository {
     Sock addStock(Color color, SizeSock sizeSock, int cottonPart, int quantity);
 
-    Sock deleteSocksInStock(Color color, int cottonPart, int quantity);
+    Sock putSock(Color color, SizeSock sizeSock, int cottonPart, int quantity);
 
-    int findQuantityCottonMinBySocks(Color color,SizeSock sizeSock,int cottonMin);
+    void deleteSocksInStock(Color color, int cottonPart, int quantity);
 
-    int findQuantityCottonMaxBySocks(Color color,SizeSock sizeSock, int cottonMax);
+    SockDTO findQuantityCottonMinBySocks(Color color, SizeSock sizeSock, int cottonMin);
+
+    SockDTO findQuantityCottonMaxBySocks(Color color,SizeSock sizeSock, int cottonMax);
 
 }
