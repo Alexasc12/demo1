@@ -13,7 +13,7 @@ import java.util.Map;
 @Component
 public class StockRepositoryImpl implements StockRepository {
 
-    private final Map<Integer,Sock> map = new HashMap<>();
+    private final Map<Sock,Integer> map = new HashMap<>();
 
     private int countId;
 
@@ -21,27 +21,43 @@ public class StockRepositoryImpl implements StockRepository {
     @Override
     public Sock addStock(Color color, SizeSock sizeSock, int cottonPart, int quantity) {
        Sock sock = new Sock( );
-       sock.setId(countId++);
        sock.setColor(color);
        sock.setSize(sizeSock);
        sock.setCottonPart(cottonPart);
        sock.setQuantity(quantity);
-     Sock sockAdd = map.put(sock.getId(),sock);
-        validateRequest(sockAdd);
-        return  sockAdd;
+        validateRequest(sock);
+        if(map.containsKey(sock)){
+             map.put(sock, map.get(sock) + sock.getQuantity());
+       }else
+            map.put(sock,sock.getQuantity());
+        return  sock;
     }
 
     @Override
     public Sock putSock(Color color, SizeSock sizeSock, int cottonPart, int quantity) {
-        Sock newSock = null;
-        for (Sock sock : map.values()) {
-            if (sock.getColor().equals(color) && sock.getSize().equals(sizeSock) && sock.getCottonPart() == cottonPart) {
-                int sockQuantity = sock.getQuantity() + quantity ;
-                 sock.setQuantity(sockQuantity);
-                 newSock = sock;
-            }
+//        Sock newSock = null;
+//        for (Sock sock : map.values()) {
+//            if (sock.getColor().equals(color) && sock.getSize().equals(sizeSock) && sock.getCottonPart() == cottonPart) {
+//                int sockQuantity = sock.getQuantity() + quantity ;
+//                 sock.setQuantity(sockQuantity);
+//                 newSock = sock;
+//            }
+//        }
+//        return  newSock;
+
+        {
+            Sock sock = new Sock( );
+            sock.setColor(color);
+            sock.setSize(sizeSock);
+            sock.setCottonPart(cottonPart);
+            sock.setQuantity(quantity);
+            validateRequest(sock);
+            if(map.containsKey(sock)){
+                map.put(sock, map.get(sock) - sock.getQuantity());
+                return  sock;
+            }else
+                throw new InsufficientSockQuantityException("There is not socks");
         }
-        return  newSock;
     }
 
 
@@ -49,7 +65,7 @@ public class StockRepositoryImpl implements StockRepository {
 
     @Override
     public void deleteSocksInStock(Color color, int cottonPart, int quantity) {
-        for(Sock sock: map.values()){
+        for(Sock sock: map.keySet()){
              if (sock.getColor().equals(color) && sock.getCottonPart() == cottonPart ) {
                 int newQuantity = sock.getQuantity()-quantity;
                 sock.setQuantity(newQuantity);
@@ -61,23 +77,24 @@ public class StockRepositoryImpl implements StockRepository {
     public SockDTO findQuantityCottonMinBySocks(Color color, SizeSock sizeSock, int cottonMin) {
         SockDTO dto = null;
         int countSocksMin=0;
-        for (Sock sock : map.values()) {
-            if (sock.getColor().equals(color) && sock.getSize().equals(sizeSock) && sock.getCottonPart() > cottonMin) {
+        for (Sock sock: map.keySet() )
+
+        if (sock.getColor().equals(color) && sock.getSize().equals(sizeSock) && sock.getCottonPart() > cottonMin) {
                 countSocksMin= countSocksMin+1;
                   dto = SockDTO.builder()
                         .cottonPart(sock.getCottonPart())
                         .quantity(countSocksMin)
                         .build();
-            }
+            }return dto;
         }
-        return dto;
-    }
+
+
 
     @Override
     public SockDTO findQuantityCottonMaxBySocks(Color color, SizeSock sizeSock, int cottonMax) {
         SockDTO dto = null;
         int countSocksMax=0;
-        for (Sock sock : map.values()) {
+        for (Sock sock : map.keySet()) {
             if (sock.getColor().equals(color) && sock.getSize().equals(sizeSock) && sock.getCottonPart() > cottonMax) {
                 countSocksMax= countSocksMax+1;
                 dto = SockDTO.builder()
